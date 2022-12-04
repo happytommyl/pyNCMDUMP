@@ -6,6 +6,7 @@ import os
 import sys
 import glob
 from Crypto.Cipher import AES
+import asyncio
 
 def existing_mp3(file_path):
     file_name = os.path.splitext(file_path)[0]    
@@ -13,9 +14,10 @@ def existing_mp3(file_path):
 
 def dump(file_path):
     if existing_mp3(file_path):
-        print('转换文件已存在，跳过\n')
+        print('转换文件已存在，跳过')
         return
     # hex to str
+    print(f'正在转换文件:{file_path}')
     core_key = binascii.a2b_hex("687A4852416D736F356B496E62617857")
     meta_key = binascii.a2b_hex("2331346C6A6B5F215C5D2630553C2728")
     unpad = lambda s: s[0:-(s[-1] if type(s[-1]) is int else ord(s[-1]))]

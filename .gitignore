@@ -4,3 +4,4 @@
 *.spec
 *.exe
 ncmdump
+__pycache__/*
