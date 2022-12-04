@@ -9,7 +9,6 @@ customtkinter.set_appearance_mode("Dark")
 # Themes: "blue" (standard), "green", "dark-blue"
 customtkinter.set_default_color_theme("blue")
 
-
 def load_path():
     directory = os.path.abspath(filedialog.askdirectory())
     return directory
@@ -38,13 +37,34 @@ def update_path(field_path: customtkinter.CTkTextbox, field_ncm: customtkinter.C
     # print(list_mp3, list_ncm)
 
 
-def transcode(path: str):
+def transcode(path: str, root, btn):
     path = path.replace('\n', '')
     list_ncm = list(map(lambda s: os.path.join(path, s), filter(
         lambda s: s.endswith('.ncm'), os.listdir(path))))
     # [ncmdump.dump(os.path.abspath(file)) for file in list_ncm]
-    multiprocessing.Pool().map_async(convert, list_ncm)
+    btn.configure(state="disabled")
+    btn.configure(text='正在转换')
+    pool = multiprocessing.Pool(4).map_async(convert, list_ncm)
+    schedule_check(pool, root, btn)
 
+def schedule_check(pool, root, btn):
+    """
+    Schedule the execution of the `check_if_done()` function after
+    one second.
+    """
+    root.after(1000, check_if_done, pool,root, btn)
+
+
+def check_if_done(pool,root, btn):
+    # If the thread has finished, re-enable the button and show a message.
+    if pool.ready():
+        print("done")
+        btn.configure(state="normal")
+        btn.configure(text="开始转换")
+        return True
+    else:
+        # Otherwise check again after one second.
+        schedule_check(pool, root, btn)
 
 def setup():
     root = customtkinter.CTk()
@@ -54,7 +74,7 @@ def setup():
     frame_main = customtkinter.CTkFrame(master=root)
     frame_main.pack(pady=20, padx=30, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame_main, text="path")
+    label = customtkinter.CTkLabel(master=frame_main, text="请选择目录：")
     label.pack(pady=12, padx=10)
 
     text_path = customtkinter.CTkTextbox(
@@ -71,9 +91,11 @@ def setup():
     btn_folder.pack(pady=12, padx=10)
 
     btn_trascode = customtkinter.CTkButton(
-        master=frame_main, height=10, text="开始转换", command=lambda: transcode(text_path.get("0.0", customtkinter.END)))
+        master=frame_main, height=10, text="开始转换", )
+    btn_trascode.configure(command=lambda: transcode(text_path.get("0.0", customtkinter.END),root=root,btn=btn_trascode))
     btn_trascode.pack(pady=12, padx=10)
 
+    
     # frame_file.pack(pady=20, padx=60, fill="both", expand=True)
     # field_ncm.pack(padx=12, pady=10)
     # field_mp3.pack(padx=12, pady=10)
