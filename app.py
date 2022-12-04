@@ -10,9 +10,12 @@ customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
 
 def load_path():
-    directory = os.path.abspath(filedialog.askdirectory())
-    return directory
+    directory = filedialog.askdirectory()
+    return os.path.abspath(directory) if directory!="" else ''
 
+def open_path(path):
+    path = os.path.abspath(path.replace('\n', ''))
+    os.startfile(path)
 
 def convert(file: str):
     print("start converting" + file)
@@ -22,7 +25,7 @@ def convert(file: str):
 
 def update_path(field_path: customtkinter.CTkTextbox, field_ncm: customtkinter.CTkTextbox, field_mp3: customtkinter.CTkTextbox):
     path_text = load_path().replace('\n', '')
-    if path_text:
+    if path_text!='':
         field_path.delete("0.0", customtkinter.END)
         field_mp3.delete("0.0", customtkinter.END)
         field_ncm.delete("0.0", customtkinter.END)
@@ -95,6 +98,9 @@ def setup():
     btn_trascode.configure(command=lambda: transcode(text_path.get("0.0", customtkinter.END),root=root,btn=btn_trascode))
     btn_trascode.pack(pady=12, padx=10)
 
+    btn_open = customtkinter.CTkButton(
+        master=frame_main, height=10, text="打开目录", command=lambda: open_path(text_path.get('0.0', customtkinter.END)))
+    btn_open.pack(pady=12, padx=10)
     
     # frame_file.pack(pady=20, padx=60, fill="both", expand=True)
     # field_ncm.pack(padx=12, pady=10)
